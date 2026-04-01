@@ -87,13 +87,13 @@ npm run build
 
 ## demo
 
-在线测试
-http://label.kuaibiao.com.cn/
-admin@kb.com.cn
-sz123456
+在线测试   
+http://label.kuaibiao.com.cn/   
+admin@kb.com.cn    
+sz123456   
 
 ## 联系我
-有需要部署,二次开发等技术支持的可联系我
+有需要部署,二次开发等技术支持的可联系我   
 QQ 87257302
 
 ## 许可证
