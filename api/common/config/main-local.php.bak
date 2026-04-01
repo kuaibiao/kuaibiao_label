@@ -1,0 +1,65 @@
+<?php
+return [
+    'vendorPath' => dirname(dirname(__DIR__)) . '/vendor',
+    'components' => [
+        'redis' => [
+            'class' => 'diszz\phpredis\Connection',
+            'hostname' => '127.0.0.1',
+            'password' => null,//qweasdzxc123456
+            'port' => 6379,
+            'database' => 0,
+            'keyPrefix' => 'lite.redis:',
+            'sentinel' => 0,
+            'cluster' => 0,
+            'servers' => ['127.0.0.1:7000', '127.0.0.1:7001', '127.0.0.1:7002']
+        ],
+        'cache' => [
+            //'class' => 'yii\caching\FileCache',
+            'class' => 'diszz\phpredis\Cache',
+            'keyPrefix' => 'saas.cache:',
+        ],
+        'session' => [
+            'class' => 'diszz\phpredis\Session',
+            'keyPrefix' => 'saas.session:',
+            // 'class' => 'yii\web\DbSession',
+            // 'db' => 'mydb',  // 数据库连接的应用组件ID，默认为'db'.
+            // 'sessionTable' => 'my_session', // session 数据表名，默认为'session'.
+        ],
+        'log' => [
+            //'traceLevel' => 3,//YII_DEBUG ? 3 : 0
+            'targets' => [
+                'file' => [
+                    'class' => 'yii\log\FileTarget',
+                    'levels' => ['error', 'warning'],//, 'file'
+                    'logFile' => '@app/../logfile/'.date('ymd').'/app.'.date('H').'.log',
+                    'maxLogFiles' => 4,
+                    'maxFileSize' => 512000, // in KB
+                    'fileMode' => 0777,
+                    'dirMode' => 0777,
+                    'rotateByCopy' => false,
+                ],
+            ],
+        ],
+        //单台数据库连接方式
+        'db' => [
+            'class' => 'yii\db\Connection',
+            'dsn' => 'mysql:host=127.0.0.1;port=3307;dbname=lite', // MySQL, MariaDB
+            //'dsn' => 'sqlite:/path/to/database/file', // SQLite
+            //'dsn' => 'pgsql:host=localhost;port=5432;dbname=mydatabase', // PostgreSQL
+            //'dsn' => 'cubrid:dbname=demodb;host=localhost;port=33000', // CUBRID
+            //'dsn' => 'sqlsrv:Server=localhost;Database=mydatabase', // MS SQL Server, sqlsrv driver
+            //'dsn' => 'dblib:host=localhost;dbname=mydatabase', // MS SQL Server, dblib driver
+            //'dsn' => 'mssql:host=localhost;dbname=mydatabase', // MS SQL Server, mssql driver
+            //'dsn' => 'oci:dbname=//localhost:1521/mydatabase', // Oracle
+            'username' => '',
+            'password' => '',
+            'charset' => 'utf8mb4',
+            
+            'enableSchemaCache' => true,//开启表结构缓存
+            'schemaCache' => 'cache',
+            'schemaCacheDuration' => 3600,
+            
+            //'enableQueryCache' => true,//开启查询缓存
+        ],
+    ],
+];

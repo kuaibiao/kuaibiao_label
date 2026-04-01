@@ -1,0 +1,22 @@
+<?php
+return [
+
+	//系统过期时间, 0表无过期
+    'system.expiry_date' => '2099-3-15 10:30:00',
+    
+    //ftp配置
+    'ftp.host' => 'ftp://116.196.110.18',
+    'ftp.user_conf' => '/www/www.com/api/ftpconf/vsftpd/user_conf',//ftp配置信息
+    'ftp.user_home' => '/ftp_home',//ftp用户登录时的home, 此目录为ftp服务器路径, 非web服务器路径
+	
+    //团队域名配置
+    'domain.confd' => '/www/_web/domainconf/conf.d',//ftp配置信息
+	
+    //ffmpeg
+    'ffmpeg_bin' => 'ffmpeg',
+    
+    //php
+    'phpbin' => 'php',
+    
+    
+];

@@ -1,0 +1,365 @@
+<?php
+namespace api\models;
+
+use Yii;
+use yii\base\Model;
+use common\models\User;
+use common\models\UserRecord;
+use common\models\UserStat;
+use common\models\UserDevice;
+use common\models\App;
+use common\models\AppStat;
+use common\components\ActionUserFilter;
+use common\helpers\SecurityHelper;
+use common\helpers\StringHelper;
+
+
+/**
+ * Login form
+ */
+class LoginForm extends Model
+{
+    public $username;
+    public $password;
+    public $device_name;
+    public $device_number;
+    public $device_token;
+    public $app_key;
+    public $app_version;
+    public $verifyCode;
+    
+    private $_user;
+    
+    /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            ['username', 'required'],
+            ['username', 'string', 'min' => 6, 'max' => 64],
+            ['username', 'filter', 'filter' => 'trim'],
+            ['username', 'filter', 'filter' => function($value) {
+                return strtolower($value);
+            }],
+            ['username', 'checkUsername'],
+            
+            ['password', 'required'],
+            ['password', 'string', 'min' => 6, 'max' => 32],
+            ['password', 'match', 'pattern' => User::getPasswordRegex(), 'message'=> Yii::t('app', 'password_format_error')],
+            ['password', 'validatePassword'],
+            
+            ['device_name', 'required'],
+            ['device_name', 'string', 'max' => 30],
+            
+            ['device_number', 'required'],
+            ['device_number', 'string', 'max' => 64],
+            
+            ['device_token', 'string', 'max' => 64],
+            
+            ['app_key', 'required'],
+            ['app_key', 'string', 'max' => 64],
+            ['app_key', 'checkApp'],
+            
+            ['app_version', 'required'],
+            ['app_version', 'string', 'max' => 64],
+            
+            //['verifyCode', 'required'],
+            ['verifyCode', 'captcha', 'skipOnEmpty' => true]
+        ];
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'username' => '邮箱',
+            'password' => '登录密码',
+            'verifyCode' => '验证码'
+        ];
+    }
+    
+    public function checkApp($attribute, $params)
+    {
+        $_logs = ['appKey' => $this->app_key];
+    
+        if (!$this->hasErrors())
+        {
+            $app = App::find()->where(['app_key' => $this->app_key, 'app_version' => $this->app_version])->asArray()->limit(1)->one();
+            if (!$app)
+            {
+                $this->addError($attribute, Yii::t('app', 'app_check_fail'));
+                Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' app_check_fail '.json_encode($_logs));
+                return false;
+            }
+            
+            $user = $this->getUser();
+            if (!$user)
+            {
+                $this->addError($attribute, Yii::t('app', 'user_not_exist'));
+                Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' user_not_exist '.json_encode($_logs));
+                return false;
+            }
+            else
+            {
+                Yii::info(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' succ '.json_encode($_logs));
+                return true;
+            }
+        }
+    }
+    
+    public function checkUsername($attribute, $params)
+    {
+        $_logs = ['username' => $this->username, 'startTime' => microtime(true)];
+        
+        if (!$this->hasErrors())
+        {
+            $user = $this->getUser();
+            if (!$user)
+            {
+                $this->addError($attribute, Yii::t('app', 'user_not_exist'));
+                Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' user_not_exist '.json_encode($_logs));
+                return false;
+            }
+            $_logs['$user'] = $user->getAttributes();
+            
+            if ($user->status == User::STATUS_NOTACTIVE)
+            {
+                $this->addError($attribute, Yii::t('app', 'user_auditing'));
+                Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' user_auditing '.json_encode($_logs));
+                return false;
+            }
+            elseif($user->status != User::STATUS_ACTIVE)
+            {
+                $this->addError($attribute, Yii::t('app', 'user_unavailable'));
+                Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' user_unavailable '.json_encode($_logs));
+                return false;
+            }
+            else
+            {
+                $_logs['usedTime'] = microtime(true) - $_logs['startTime'];
+                
+                Yii::info(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' succ '.json_encode($_logs));
+                return true;
+            }
+        }
+    }
+    
+    /**
+     * Validates the password.
+     * This method serves as the inline validation for password.
+     *
+     * @param string $attribute the attribute currently being validated
+     * @param array $params the additional name-value pairs given in the rule
+     */
+    public function validatePassword($attribute, $params)
+    {  
+        $_logs = ['password' => $this->password];
+        
+        if (!$this->hasErrors())
+        {
+            //校验错误次数
+            $cackeyKey = Yii::$app->redis->buildKey('user:loginErrorTimes:'.$this->username);
+            $_logs['$cackeyKey'] = $cackeyKey;
+            
+            if (Yii::$app->redis->exists($cackeyKey))
+            {
+                $errorTimes = Yii::$app->redis->get($cackeyKey);
+                $_logs['$errorTimes'] = $errorTimes;
+                
+                if ($errorTimes > 5)
+                {
+                    Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' $errorTimes '.json_encode($_logs));
+                    $this->addError($attribute, Yii::t('app', 'password_fail_excessive'));
+                    return false;
+                }
+            }
+            
+            $user = $this->getUser();
+            
+            //密码的加密算法使用了600ms多
+            if (!$user)
+            {
+                Yii::$app->redis->incr($cackeyKey);
+                Yii::$app->redis->expire($cackeyKey, 600);
+                
+                $this->addError($attribute, Yii::t('app', 'username_or_password_fail'));
+                Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' username_or_password_fail '.json_encode($_logs));
+                return false;
+            }
+            
+            if (!$user->validatePassword($this->password))
+            {
+                Yii::$app->redis->incr($cackeyKey);
+                Yii::$app->redis->expire($cackeyKey, 600);
+                
+                $this->addError($attribute, Yii::t('app', 'username_or_password_fail'));
+                Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' username_or_password_fail '.json_encode($_logs));
+                return false;
+            }
+        }
+        
+        Yii::info(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' succ '.json_encode($_logs));
+        return true;
+    }
+
+    /**
+     * Logs in a user using the provided username and password.
+     *
+     * @return bool whether the user is logged in successfully
+     */
+    public function login()
+    {
+        $_logs =  [];
+        
+        $user = $this->getUser();
+        $_logs['$user'] = $user;
+        Yii::info(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' get user '.json_encode($_logs));
+
+        if (!$user)
+        {
+            $this->addError('username', Yii::t('app', 'user_not_exist'));
+            Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' user not exist '.json_encode($_logs));
+            return false;
+        }
+        
+        //---------------------------------------
+        
+        $app = App::find()->where(['app_key' => $this->app_key, 'app_version' => $this->app_version])->asArray()->limit(1)->one();
+        if (!$app)
+        {
+            $this->addError('app_key', Yii::t('app', 'app_check_fail'));
+            Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' app_check_fail '.json_encode($_logs));
+            return false;
+        }
+        
+        //app请求记录
+        $appStat = AppStat::find()->where(['app_id' => $app['id'], 'date' => date('Y-m-d')])->asArray()->limit(1)->one();
+        if ($appStat)
+        {
+            $counters = ['count' => 1];
+            AppStat::updateAllCounters($counters, ['id' => $appStat['id']]);
+        }
+        else
+        {
+            $appStat = new AppStat();
+            $appStat->app_id = $app['id'];
+            $appStat->date = date('Y-m-d');
+            $appStat->count = 1;
+            $appStat->save();
+        }
+
+        //---------------------------------------
+
+        //更新用户设备
+        $userDevice = UserDevice::find()->where(['user_id' => $user->id, 'device_number' => $this->device_number])->asArray()->limit(1)->one();
+        if ($userDevice)
+        {
+            $counters = [
+                'request_count' => 1,
+                'updated_at' => (time() - $userDevice['updated_at'])
+            ];
+            UserDevice::updateAllCounters($counters, ['id' => $userDevice['id']]);
+            
+            //设备token变更
+            if ($userDevice['device_token'] != $this->device_token || $userDevice['app_key'] != $this->app_key || $userDevice['app_version'] != $this->app_version)
+            {
+                $attributes = [
+                    'device_token' => (string)$this->device_token,
+                    'app_key' => $this->app_key,
+                    'app_version' => $this->app_version,
+                    'updated_at' => time()
+                ];
+                UserDevice::updateAll($attributes, ['id' => $userDevice['id']]);
+            }
+        }
+        else
+        {
+            $userDevice = new UserDevice();
+            $userDevice->user_id = $user->id;
+            $userDevice->device_name = $this->device_name;
+            $userDevice->device_number = $this->device_number;
+            $userDevice->device_token = (string)$this->device_token;
+            $userDevice->app_key = (string)$this->app_key;
+            $userDevice->app_version = $this->app_version;
+            $userDevice->request_count = 1;
+            $userDevice->created_at = time();
+            $userDevice->save();
+        }
+
+        //更新登录时间和ip
+        $userStat = UserStat::find()->where(['user_id' => $user->id])->asArray()->limit(1)->one();
+        if (!$userStat)
+        {
+            $userStat = new UserStat();
+            $userStat->user_id = $user->id;
+            $userStat->save();
+        }
+        $attributes = [
+            'login_last_platform' => $app['platform'],
+            'login_last_device_id' => $userDevice['id'],
+            'login_last_time' => time(),
+            'login_last_ip' => (string)Yii::$app->request->getUserIP(),
+            'login_last_useragent' => (string)Yii::$app->request->getUserAgent(),
+        ];
+        UserStat::updateAll($attributes, ['user_id' => $user->id]);
+
+        //校验access token
+        if (!User::isAccessTokenValid($user->access_token))
+        {
+            $user->access_token = User::generateAccessToken($user->id, Yii::$app->request->getUserIP(), $this->app_key, $this->app_version);
+            Yii::error(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' generate new '.json_encode($_logs));
+            
+            $attributes = [
+                'access_token' => $user->access_token,
+                'updated_at' => time()
+            ];
+            User::updateAll($attributes, ['id' => $user->id]);
+        }
+        //执行登录
+        Yii::$app->user->loginByAccessToken($user->access_token);
+        
+        //刷新用户登录凭证
+        ActionUserFilter::refreshLoginStatus($user->id);
+
+        //保存用户操作记录
+        $userRecord = new UserRecord();
+        $result = $userRecord->saveRecord('login', $user->id, '');
+
+        Yii::info(__CLASS__.' '.__FUNCTION__.' '.__LINE__.' succ '.json_encode($_logs));
+        return $user;
+    }
+
+    /**
+     * Finds user by [[username]]
+     *
+     * @return User|null
+     */
+    function getUser()
+    {
+        if ($this->_user === null) {
+            if (strpos($this->username, '@'))
+            {
+                $this->_user = User::find()
+                ->where(['email' => $this->username])
+                ->andWhere(['not', ['status' => User::STATUS_DELETED]])
+                ->limit(1)->one();
+            }
+            elseif (is_numeric($this->username))
+            {
+                $this->_user = User::find()
+                ->where(['mobile' => $this->username])
+                ->andWhere(['not', ['status' => User::STATUS_DELETED]])
+                ->limit(1)->one();
+            }
+            else
+            {
+            }
+        }
+
+        return $this->_user;
+    }
+
+}

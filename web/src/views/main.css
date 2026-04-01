@@ -1,0 +1,234 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, "Nimbus Sans L", Arial, "Liberation Sans", "Hiragino Sans GB", "Source Han Sans CN Normal", "Microsoft YaHei", "微软雅黑", "Wenquanyi Micro Hei", "WenQuanYi Zen Hei", "ST Heiti", SimHei, "WenQuanYi Zen Hei Sharp", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #edf0f5;
+}
+.lock-screen-back {
+  border-radius: 50%;
+  z-index: -1;
+  box-shadow: 0 0 0 0 #667aa6 inset;
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 3s;
+}
+.main {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.main .unlock-con {
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 11000;
+}
+.main .sidebar-menu-con {
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 21;
+  transition: width .2s linear;
+  background: #495060;
+}
+.main .layout-text {
+  display: inline-block;
+  white-space: nowrap;
+  position: absolute;
+}
+.main .main-hide-text .layout-text {
+  display: none;
+}
+.main-content-container {
+  position: relative;
+}
+.main-header-con {
+  box-sizing: border-box;
+  position: fixed;
+  display: block;
+  padding-left: 200px;
+  width: 100%;
+  height: 88px;
+  z-index: 20;
+  box-shadow: 0 2px 1px 1px rgba(100, 100, 100, 0.1);
+  transition: padding .3s;
+}
+.main-breadcrumb {
+  padding: 4px 15px 0;
+}
+.main-menu-left {
+  background: #464c5b;
+  height: 100%;
+}
+.main .tags-con {
+  height: 40px;
+  z-index: -1;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+.main .tags-con .tags-outer-scroll-con {
+  position: relative;
+  box-sizing: border-box;
+  padding-right: 120px;
+  width: 100%;
+  height: 100%;
+}
+.main .tags-con .tags-outer-scroll-con .tags-inner-scroll-body {
+  position: absolute;
+  padding: 2px 10px;
+  overflow: visible;
+  white-space: nowrap;
+  transition: left .3s ease;
+}
+.main .tags-con .tags-outer-scroll-con .close-all-tag-con {
+  position: absolute;
+  right: 0;
+  top: 0;
+  box-sizing: border-box;
+  padding-top: 8px;
+  text-align: center;
+  width: 50px;
+  height: 100%;
+  background: white;
+  box-shadow: -3px 0 15px 3px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+.main .tags-con .tags-outer-scroll-con .close-all-tag-con .close-tag-content {
+  margin: 0 auto;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  cursor: pointer;
+}
+.main-header {
+  height: 48px;
+  background: #fff;
+  box-shadow: 0 2px 1px 1px rgba(100, 100, 100, 0.1);
+  position: relative;
+  z-index: 11;
+}
+.main-header .navicon-con {
+  display: inline-block;
+}
+.main-header .header-middle-con {
+  position: absolute;
+  left: 20px;
+  top: 0;
+  right: 340px;
+  bottom: 0;
+  padding: 10px;
+  overflow: hidden;
+}
+.main-header .header-avator-con {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 250px;
+}
+.main-header .header-avator-con .switch-theme-con {
+  display: inline-block;
+  width: 40px;
+  height: 100%;
+}
+.main-header .header-avator-con .message-con {
+  display: inline-block;
+  width: 30px;
+  padding: 12px 0;
+  text-align: center;
+  cursor: pointer;
+}
+.main-header .header-avator-con .message-con i {
+  vertical-align: middle;
+}
+.main-header .header-avator-con .change-skin {
+  font-size: 14px;
+  font-weight: 500;
+  padding-right: 5px;
+}
+.main-header .header-avator-con .switch-theme {
+  height: 100%;
+}
+.main-header .header-avator-con .user-dropdown-menu-con {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 150px;
+  height: 100%;
+}
+.main-header .header-avator-con .user-dropdown-menu-con .main-user-name {
+  display: inline-block;
+  width: 80px;
+  word-break: keep-all;
+  white-space: nowrap;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+.main-header .header-avator-con .user-dropdown-innercon {
+  height: 100%;
+  padding-right: 14px;
+}
+.main-header .header-avator-con .full-screen-btn-con {
+  display: inline-block;
+  width: 30px;
+  padding: 12px 0;
+  text-align: center;
+  cursor: pointer;
+}
+.main-header .header-avator-con .full-screen-btn-con i {
+  vertical-align: middle;
+}
+.main-header .header-avator-con .lock-screen-btn-con {
+  display: inline-block;
+  width: 30px;
+  padding: 12px 0;
+  text-align: center;
+  cursor: pointer;
+}
+.main-header .header-avator-con .lock-screen-btn-con i {
+  vertical-align: middle;
+}
+.main .single-page-con {
+  position: absolute;
+  top: 88px;
+  right: 0;
+  bottom: 0;
+  overflow: auto scroll;
+  background-color: #F0F0F0;
+  z-index: 1;
+  transition: left .3s;
+}
+.main .single-page-con .single-page {
+  padding: 10px;
+}
+.main-copy {
+  text-align: center;
+  padding: 10px 0 20px;
+  color: #9ea7b4;
+}
+.taglist-moving-animation-move {
+  transition: transform .3s;
+}
+.logo-con {
+  padding: 8px;
+  text-align: center;
+}
+.logo-con img {
+  height: 44px;
+  width: auto;
+}
+.ivu-poptip-content {
+  max-height: 508px;
+  overflow-y: auto;
+}
+.ivu-card-head p i, .ivu-card-head p span {
+  vertical-align: 0.5em;
+}
+

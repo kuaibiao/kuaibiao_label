@@ -1,0 +1,34 @@
+{
+
+    "name": "diszz/yii2-chinesepinyin",
+
+
+    "type": "yii2-extension",
+
+    "description": "The chinesepinyin integration for the Yii framework",
+    "keywords": ["yii2", "chinesepinyin", "pinyin", "helper"],
+    "license": "BSD-3-Clause",
+    "support": {
+        "issues": "https://github.com/diszz/yii2-chinesepinyin/issues",
+        "wiki": "https://github.com/diszz/yii2-chinesepinyin/wiki",
+        "source": "https://github.com/diszz/yii2-chinesepinyin"
+    },
+    "authors": [
+        {
+            "name": "xulihui",
+            "email": "xulihui1985@126.com"
+        }
+    ],
+
+
+    "require": {
+        "yiisoft/yii2": "~2.0.0"
+    },
+
+    
+    "autoload": {
+        "psr-4": {
+            "diszz\\chinesepinyin\\": ""
+        }
+    }
+}
