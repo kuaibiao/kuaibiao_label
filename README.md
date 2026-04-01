@@ -55,6 +55,8 @@ composer install
 2. 配置数据库连接（复制并修改配置文件）：
 ```bash
 cp api/common/config/main-local.php.example api/common/config/main-local.php
+
+cp api/common/config/params-local.php.example api/common/config/params-local.php
 ```
 
 3. 执行数据库迁移：
