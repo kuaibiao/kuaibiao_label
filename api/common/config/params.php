@@ -6,7 +6,7 @@ return [
     'user.verifyTokenExpire' => 3600*24,
     'user_count_limit' => 10000,   //平台用户总数量限制
     //加密解密
-    'security.secretkey' => '&^hl$hfody9', //秘钥
+    'security.secretkey' => '&^hl$***', //秘钥
     
     //系统授权配置
     'system.expiry_date' => '2025-3-15 10:30:00',//有效期
