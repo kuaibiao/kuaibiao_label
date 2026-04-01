@@ -90,6 +90,17 @@ npm run build
 
 详细功能说明请参阅 [数据标注系统介绍](docs/数据标注系统介绍-lite-v1.md)。
 
+## demo
+
+在线测试
+http://label.kuaibiao.com.cn/
+admin@kb.com.cn
+sz123456
+
+## 联系我
+有需要部署,二次开发等技术支持的可联系我
+QQ 87257302
+
 ## 许可证
 
 MIT License
