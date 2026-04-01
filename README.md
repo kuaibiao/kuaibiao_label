@@ -59,13 +59,8 @@ cp api/common/config/main-local.php.example api/common/config/main-local.php
 
 3. 执行数据库迁移：
 ```bash
-cd api
-php yii migrate
-```
-
-4. 启动服务：
-```bash
-php yii serve --port=8801
+docs/mysql_label.table.sql
+docs/mysql_label.data.sql
 ```
 
 ### 前端配置

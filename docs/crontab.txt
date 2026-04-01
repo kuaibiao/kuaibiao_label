@@ -1,0 +1,8 @@
+
+#lite
+#* * * * * php /Users/lihuixu/workspace/diszz/kuaibiao_lite/kuaibiao_lite_api/yii site/crontab
+* * * * * php /www/wwwroot/kuaibiao_label/api/yii site/crontab
+
+
+#docker
+* * * * * /usr/local/bin/php /www/api/yii site/crontab >> /var/log/cron.log 2>&1

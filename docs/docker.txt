@@ -1,0 +1,58 @@
+https://blog.csdn.net/happy921212/article/details/130566952
+
+docker pull mysql
+docker run  -it --name labeltool-mysql -p 33061:3306 -v /www/dockerfile/labeltool/mysql:/www -e MYSQL_ROOT_PASSWORD=af88e4c3298 --restart=always --privileged=true -d mysql
+
+docker exec -it labeltool-mysql /bin/bash
+进入mysql命令行
+create database labeltool;
+use labeltool;
+source /www/sss.sql
+
+
+docker pull redis
+docker run  -it --name labeltool-redis -p 63791:6379 --restart=always --privileged=true -d redis
+
+docker pull php:8.1-fpm
+docker run -it --name labeltool-php -p 9001:9000 -v /www/dockerfile/labeltool/www:/www --link labeltool-mysql:mysql --link labeltool-redis:redis --restart=always --privileged=true -d php:php81fpm-v1.8
+
+
+
+docker exec -it labeltool-php /bin/bash
+
+docker-php-ext-install pdo_mysql mysqli pdo mbstring bcmath opcache libzip-dev zip sockets
+(docker-php-ext-configure opcache --enable-opcache && docker-php-ext-install opcache)
+
+apt-get update && apt-get install -y zlib1g-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev && docker-php-ext-configure gd --enable-gd --with-freetype --with-jpeg && docker-php-ext-install gd
+
+apt-get update && apt-get install -y zlib1g-dev libzip-dev unzip zip rar unrar && docker-php-ext-install zip
+
+pecl install redis && docker-php-ext-enable redis
+
+apt-get update && apt-get install -y  libmagickwand-dev imagemagick && pecl install imagick && docker-php-ext-enable imagick
+
+
+apt-get update && apt-get install -y procps vim cron 
+cron重启命令 service cron restart
+
+
+docker commit labeltool-php labeltool-php:php81fpm-v1.2
+
+docker pull nginx
+docker run -it --name labeltool-nginx -p 8800:80 -v /www/dockerfile/labeltool/nginx/conf:/etc/nginx/conf.d -v /www/dockerfile/labeltool/www:/www -v /www/dockerfile/labeltool/nginx/logs:/var/log/nginx --link labeltool-php:php --restart=always -d nginx
+docker run -it --name labeltool-nginx-php -p 8801:81 -v /www/dockerfile/labeltool/nginx1/conf:/etc/nginx/conf.d -v /www/dockerfile/labeltool/www:/www -v /www/dockerfile/labeltool/nginx1/logs:/var/log/nginx --link labeltool-php:php --restart=always -d nginx
+docker run -it --name labeltool-nginx-file -p 8802:82 -v /www/dockerfile/labeltool/nginx2/conf:/etc/nginx/conf.d -v /www/dockerfile/labeltool/www:/www -v /www/dockerfile/labeltool/nginx2/logs:/var/log/nginx --link labeltool-php:php --restart=always -d nginx
+
+docker exec -it labeltool-nginx /bin/bash
+docker exec -it labeltool-nginx-php /bin/bash
+docker exec -it labeltool-nginx-file /bin/bash
+
+
+
+
+ 
+
+
+
+
+

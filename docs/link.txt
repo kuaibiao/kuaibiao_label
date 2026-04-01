@@ -1,0 +1,12 @@
+
+
+1.logfile 日志目录软链
+2.resource 数据文件目录软链
+3.uploadfile 上传文件目录软链
+4.publicfile/upload 公共文件目录软链
+
+
+
+
+
+
